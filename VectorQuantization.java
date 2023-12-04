@@ -9,14 +9,14 @@ import java.io.IOException;
 public class VectorQuantization {
     String inputImageName;
     String outputImageName;
-    int clusters;
-    VectorQuantization(String inputImageName, String outputImageName, int k){
+    int codevectorCount;
+    VectorQuantization(String inputImageName, String outputImageName, int codevectorCount){
         this.inputImageName = inputImageName;
         this.outputImageName = outputImageName;
-        this.clusters = k;
+        this.codevectorCount = codevectorCount;
     }
 
-    public static void compress(String inputImagePath, String outputImagePath, int k) {
+    public static void compress(String inputImagePath, String outputImagePath, int codevectorCount) {
         try {
 
             BufferedImage bwImage = ImageIO.read(new File(inputImagePath));
@@ -37,9 +37,9 @@ public class VectorQuantization {
 
             RealMatrix dataMatrix = MatrixUtils.createRealMatrix(pixels);
 
-            // Apply k-means clustering for vector quantization
-            KMeans kMeans = new KMeans(dataMatrix, k);
-            RealMatrix compressedData = kMeans.cluster();
+            // LBG Algorithm
+            LBGAlgorithm LBGAlgorithm = new LBGAlgorithm(dataMatrix, codevectorCount);
+            RealMatrix compressedData = LBGAlgorithm.vectorQuantization();
 
             // Reconstruct the compressed image
             BufferedImage compressedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
