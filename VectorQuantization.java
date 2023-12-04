@@ -38,8 +38,8 @@ public class VectorQuantization {
             RealMatrix dataMatrix = MatrixUtils.createRealMatrix(pixels);
 
             // LBG Algorithm
-            LBGAlgorithm LBGAlgorithm = new LBGAlgorithm(dataMatrix, codevectorCount);
-            RealMatrix compressedData = LBGAlgorithm.vectorQuantization();
+            LBGAlgorithm lbgAlgorithm = new LBGAlgorithm(dataMatrix, codevectorCount);
+            RealMatrix compressedData = lbgAlgorithm.vectorQuantization();
 
             // Reconstruct the compressed image
             BufferedImage compressedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
