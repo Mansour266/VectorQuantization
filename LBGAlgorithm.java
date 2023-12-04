@@ -9,7 +9,7 @@ public class LBGAlgorithm {
 
     // k vectors
     private int codevectorCount;
-    private RealMatrix codevectors;
+    RealMatrix codevectors;
 
     public LBGAlgorithm(RealMatrix inputVectors, int codevectorCount) {
         this.inputVectors = inputVectors;
@@ -89,9 +89,15 @@ public class LBGAlgorithm {
             List<RealMatrix> cluster = clusters.get(i);
 
             if (!cluster.isEmpty()) {
-                RealMatrix sum = cluster.stream().reduce(MatrixUtils.createRealMatrix(inputVectors.getColumnDimension(), 1), RealMatrix::add);
+                int numChannels = cluster.get(0).getColumnDimension();
+                RealMatrix sum = MatrixUtils.createRealMatrix(1, numChannels);
+
+                for (RealMatrix dataPoint : cluster) {
+                    sum = sum.add(dataPoint);
+                }
+
                 RealMatrix mean = sum.scalarMultiply(1.0 / cluster.size());
-                newCodebook .setRow(i, mean.getColumn(0));
+                newCodebook.setRow(i, mean.getRow(0));
             }
         }
 
