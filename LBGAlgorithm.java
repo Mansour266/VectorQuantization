@@ -5,83 +5,82 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LBGAlgorithm {
-    private RealMatrix inputVectors;
-    private int codevectorCount;
-    RealMatrix codevectors;
+    private final RealMatrix inputVectors;
+    private final int codeVectorCount;
+    RealMatrix codeVector;
 
-    public LBGAlgorithm(RealMatrix inputVectors, int codevectorCount) {
+    public LBGAlgorithm(RealMatrix inputVectors, int codeVectorCount) {
         this.inputVectors = inputVectors;
-        this.codevectorCount = codevectorCount;
-        this.codevectors = initializeCodevectors(inputVectors.getColumnDimension());
+        this.codeVectorCount = codeVectorCount;
+        this.codeVector = initializeCodeVectors(inputVectors.getColumnDimension());
     }
 
     public RealMatrix vectorQuantization() {
         int maxIterations = 100; // Set a maximum number of iterations
         for (int iteration = 0; iteration < maxIterations; iteration++) {
-            List<List<RealMatrix>> codevectorClusters = assignToCodevectorClusters();
-            RealMatrix newCodevectors = updateCodebook(codevectorClusters);
+            List<List<RealMatrix>> codeVectorClusters = assignToCodeVectorClusters();
+            RealMatrix newCodeVectors = updateCodebook(codeVectorClusters);
 
-            if (hasConverged(codevectors, newCodevectors)) {
+            if (hasConverged(codeVector, newCodeVectors)) {
                 break; // Convergence reached
             }
 
-            codevectors = newCodevectors;
+            codeVector = newCodeVectors;
         }
 
         return quantizeData();
     }
 
-    private RealMatrix initializeCodevectors(int vectorSize) {
-        int numCols = vectorSize;
-        RealMatrix codevectors = MatrixUtils.createRealMatrix(codevectorCount, numCols);
+    private RealMatrix initializeCodeVectors(int vectorSize) {
+        RealMatrix codeVectors = MatrixUtils.createRealMatrix(codeVectorCount, vectorSize);
 
-        for (int i = 0; i < codevectorCount; i++) {
+        for (int i = 0; i < codeVectorCount; i++) {
             int randomIndex = (int) (Math.random() * inputVectors.getRowDimension());
-            codevectors.setRow(i, inputVectors.getRow(randomIndex));
+            codeVectors.setRow(i, inputVectors.getRow(randomIndex));
         }
 
-        return codevectors;
+        return codeVectors;
     }
 
-    private List<List<RealMatrix>> assignToCodevectorClusters() {
-        List<List<RealMatrix>> codevectorClusters = new ArrayList<>();
+    private List<List<RealMatrix>> assignToCodeVectorClusters() {
+        List<List<RealMatrix>> codeVectorClusters = new ArrayList<>();
 
-        for (int i = 0; i < codevectorCount; i++) {
-            codevectorClusters.add(new ArrayList<>());
+        for (int i = 0; i < codeVectorCount; i++) {
+            codeVectorClusters.add(new ArrayList<>());
         }
 
         int numRows = inputVectors.getRowDimension();
 
         for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
             RealMatrix dataPoint = inputVectors.getRowMatrix(rowIndex);
-            int assignedCluster = findClosestCodevector(dataPoint);
-            codevectorClusters.get(assignedCluster).add(dataPoint);
+            int assignedCluster = findClosestCodeVector(dataPoint);
+            codeVectorClusters.get(assignedCluster).add(dataPoint);
         }
 
-        return codevectorClusters ;
+        return codeVectorClusters ;
     }
 
-    private int findClosestCodevector(RealMatrix dataPoint) {
+    private int findClosestCodeVector(RealMatrix dataPoint) {
         double minDistance = Double.MAX_VALUE;
-        int closestCodevector = -1;
+        int closestCodeVector = -1;
 
-        for (int i = 0; i < codevectorCount; i++) {
-            RealMatrix codevector = codevectors.getRowMatrix(i);
-            double distance = calculateEuclideanDistance(dataPoint, codevector );
+        for (int i = 0; i < codeVectorCount; i++) {
+            RealMatrix codeVector = this.codeVector.getRowMatrix(i);
+            double distance = calculateEuclideanDistance(dataPoint, codeVector );
 
             if (distance < minDistance) {
                 minDistance = distance;
-                closestCodevector  = i;
+                closestCodeVector  = i;
             }
         }
 
-        return closestCodevector ;
+        return closestCodeVector ;
     }
 
     private RealMatrix updateCodebook(List<List<RealMatrix>> clusters) {
-        RealMatrix newCodebook  = MatrixUtils.createRealMatrix(codevectorCount, inputVectors.getColumnDimension());
+        RealMatrix newCodebook  = MatrixUtils.createRealMatrix(codeVectorCount, inputVectors.getColumnDimension());
 
-        for (int i = 0; i < codevectorCount; i++) {
+        for (int i = 0; i < codeVectorCount; i++) {
             List<RealMatrix> cluster = clusters.get(i);
 
             if (!cluster.isEmpty()) {
@@ -108,21 +107,21 @@ public class LBGAlgorithm {
 
     private RealMatrix quantizeData() {
         int numRows = inputVectors.getRowDimension();
-        RealMatrix codevectorAssignments  = MatrixUtils.createRealMatrix(numRows, 1);
+        RealMatrix codeVectorAssignments  = MatrixUtils.createRealMatrix(numRows, 1);
 
         for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
             RealMatrix dataPoint = inputVectors.getRowMatrix(rowIndex);
-            int assignedCluster = findClosestCodevector(dataPoint);
-            codevectorAssignments .setEntry(rowIndex, 0, assignedCluster);
+            int assignedCluster = findClosestCodeVector(dataPoint);
+            codeVectorAssignments .setEntry(rowIndex, 0, assignedCluster);
         }
 
-        return codevectorAssignments ;
+        return codeVectorAssignments ;
     }
 
     private static final double CONVERGENCE_THRESHOLD = 1e-6;
 
-    private boolean hasConverged(RealMatrix oldCodevectors, RealMatrix newCodevectors) {
-        double sumSquaredDiff = oldCodevectors.subtract(newCodevectors).getFrobeniusNorm();
+    private boolean hasConverged(RealMatrix oldCodeVectors, RealMatrix newCodeVectors) {
+        double sumSquaredDiff = oldCodeVectors.subtract(newCodeVectors).getFrobeniusNorm();
         return sumSquaredDiff < CONVERGENCE_THRESHOLD;
     }
 }

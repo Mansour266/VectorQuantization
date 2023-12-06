@@ -6,21 +6,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 
 public class VectorQuantization {
-    String inputImageName;
-    String outputImageName;
-    int codevectorCount;
-    int vectorLength;
-    int vectorWidth;
-
-    VectorQuantization(String inputImageName, String outputImageName, int codevectorCount, int vectorLength, int vectorWidth) {
-        this.inputImageName = inputImageName;
-        this.outputImageName = outputImageName;
-        this.codevectorCount = codevectorCount;
-        this.vectorLength = vectorLength;
-        this.vectorWidth = vectorWidth;
-    }
-
-    public static void compress(String inputImagePath, String outputImagePath, int codevectorCount, int vectorLength, int vectorWidth) {
+    VectorQuantization(){} //Default constructor
+    public static void compress(String inputImagePath, String outputImagePath, int codeVectorCount, int vectorLength, int vectorWidth) {
         try {
             BufferedImage rgbImage = ImageIO.read(new File(inputImagePath));
             int width = rgbImage.getWidth();
@@ -54,7 +41,7 @@ public class VectorQuantization {
             RealMatrix dataMatrix = MatrixUtils.createRealMatrix(pixels);
 
             // LBG Algorithm
-            LBGAlgorithm lbgAlgorithm = new LBGAlgorithm(dataMatrix, codevectorCount);
+            LBGAlgorithm lbgAlgorithm = new LBGAlgorithm(dataMatrix, codeVectorCount);
             RealMatrix compressedData = lbgAlgorithm.vectorQuantization();
 
             // Reconstruct the compressed image
@@ -64,9 +51,9 @@ public class VectorQuantization {
             for (int i = 0; i < width; i += vectorWidth) {
                 for (int j = 0; j < height; j += vectorLength) {
                     int compressedValue = (int) compressedData.getEntry(index++, 0);
-                    Color clusterColor = new Color((int) lbgAlgorithm.codevectors.getEntry(compressedValue, 0),
-                            (int) lbgAlgorithm.codevectors.getEntry(compressedValue, 1),
-                            (int) lbgAlgorithm.codevectors.getEntry(compressedValue, 2));
+                    Color clusterColor = new Color((int) lbgAlgorithm.codeVector.getEntry(compressedValue, 0),
+                            (int) lbgAlgorithm.codeVector.getEntry(compressedValue, 1),
+                            (int) lbgAlgorithm.codeVector.getEntry(compressedValue, 2));
 
                     // Set the cluster color in the specified region
                     for (int x = i; x < i + vectorWidth && x < width; x++) {
@@ -96,25 +83,6 @@ public class VectorQuantization {
             }
 
             System.out.println("Image compression completed.");
-
-
-//            // reading from a binary file
-//
-//            try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream("output.dat"))) {
-//                Object object = inputStream.readObject();
-//
-//                if (object instanceof BufferedImage) {
-//                    BufferedImage compressedImageFromBinary = (BufferedImage) object;
-//                    // Use the BufferedImage as needed
-//                } else {
-//                    // Handle the case where the object is not a BufferedImage
-//                    System.err.println("Unexpected object type in the file");
-//                }
-//
-//            } catch (IOException | ClassNotFoundException e) {
-//                e.printStackTrace();
-//            }
-
 
         } catch (IOException e) {
             e.printStackTrace();

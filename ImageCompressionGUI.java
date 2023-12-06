@@ -1,19 +1,12 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 public class ImageCompressionGUI extends JFrame {
-    private JTextField inputImagePath;
-    private JLabel imageNameLabel;
-    private JButton chooseImageButton;
-
-    private File inputImage; // Added to store the selected image
+    private static  JTextField inputImagePath;
+    private static JLabel imageNameLabel;
 
     public ImageCompressionGUI() {
         // Set up the JFrame
@@ -76,7 +69,7 @@ public class ImageCompressionGUI extends JFrame {
 
         // Create components for image selection
         imageNameLabel = new JLabel();
-        chooseImageButton = new JButton("Choose Image");
+        JButton chooseImageButton = new JButton("Choose Image");
 
         // Set font size for the label and button
         Font labelAndButtonFont = new Font("Arial", Font.PLAIN, 18);
@@ -92,29 +85,25 @@ public class ImageCompressionGUI extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         add(chooseImageButton, gbc);
         // Add action listener to the "Choose Image" button
-        chooseImageButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                chooseImage();
-            }
-        });
+        chooseImageButton.addActionListener(e -> chooseImage());
 
         // Add action listeners to the buttons
-        compressButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String inputName = inputImagePath.getText();
+        compressButton.addActionListener(e -> {
+            String inputName = inputImagePath.getText();
 
-                if (inputName.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "Please enter a Input image path for compression.", "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                VectorQuantization vectorQuantization = new VectorQuantization(inputName, "output.jpg", 16, 8, 8);
-                vectorQuantization.compress(inputName, "output.jpg", 16, 8, 8);
-                JOptionPane.showMessageDialog(null, "Image compressed successfully!", "Success",
-                        JOptionPane.INFORMATION_MESSAGE);
+            if (inputName.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Please enter a Input image path for compression.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
             }
+            // Here we specify the code vector count, vector length and vector width
+            VectorQuantization.compress(inputName,
+                    "output.jpg",
+                    32,
+                    2,
+                    2);
+            JOptionPane.showMessageDialog(null, "Image compressed successfully!", "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
         });
 
 
@@ -136,7 +125,8 @@ public class ImageCompressionGUI extends JFrame {
         int option = imageDialog.showOpenDialog(this);
 
         if (option == JFileChooser.APPROVE_OPTION) {
-            inputImage = imageDialog.getSelectedFile();
+            // Added to store the selected image
+            File inputImage = imageDialog.getSelectedFile();
             imageNameLabel.setText(inputImage.getName());
 
             // Set the text of the inputImagePath to the selected image path
@@ -145,11 +135,6 @@ public class ImageCompressionGUI extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new ImageCompressionGUI().setVisible(true);
-            }
-        });
+        SwingUtilities.invokeLater(() -> new ImageCompressionGUI().setVisible(true));
     }
 }
