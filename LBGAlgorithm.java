@@ -6,15 +6,13 @@ import java.util.List;
 
 public class LBGAlgorithm {
     private RealMatrix inputVectors;
-
-    // k vectors
     private int codevectorCount;
     RealMatrix codevectors;
 
     public LBGAlgorithm(RealMatrix inputVectors, int codevectorCount) {
         this.inputVectors = inputVectors;
         this.codevectorCount = codevectorCount;
-        this.codevectors = initializeCodevectors();
+        this.codevectors = initializeCodevectors(inputVectors.getColumnDimension());
     }
 
     public RealMatrix vectorQuantization() {
@@ -33,14 +31,12 @@ public class LBGAlgorithm {
         return quantizeData();
     }
 
-    private RealMatrix initializeCodevectors() {
-        int numRows = inputVectors.getRowDimension();
-        int numCols = inputVectors.getColumnDimension();
+    private RealMatrix initializeCodevectors(int vectorSize) {
+        int numCols = vectorSize;
         RealMatrix codevectors = MatrixUtils.createRealMatrix(codevectorCount, numCols);
 
-        // Initialize codevectors by selecting k random data points
         for (int i = 0; i < codevectorCount; i++) {
-            int randomIndex = (int) (Math.random() * numRows);
+            int randomIndex = (int) (Math.random() * inputVectors.getRowDimension());
             codevectors.setRow(i, inputVectors.getRow(randomIndex));
         }
 

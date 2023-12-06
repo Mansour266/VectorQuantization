@@ -4,22 +4,24 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.Map;
-
 
 public class VectorQuantization {
     String inputImageName;
     String outputImageName;
     int codevectorCount;
-    VectorQuantization(String inputImageName, String outputImageName, int codevectorCount){
+    int vectorLength;
+    int vectorWidth;
+
+    VectorQuantization(String inputImageName, String outputImageName, int codevectorCount, int vectorLength, int vectorWidth) {
         this.inputImageName = inputImageName;
         this.outputImageName = outputImageName;
         this.codevectorCount = codevectorCount;
+        this.vectorLength = vectorLength;
+        this.vectorWidth = vectorWidth;
     }
 
-    public static void compress(String inputImagePath, String outputImagePath, int codevectorCount) {
+    public static void compress(String inputImagePath, String outputImagePath, int codevectorCount, int vectorLength, int vectorWidth) {
         try {
-
             BufferedImage rgbImage = ImageIO.read(new File(inputImagePath));
             int width = rgbImage.getWidth();
             int height = rgbImage.getHeight();
@@ -27,13 +29,24 @@ public class VectorQuantization {
             double[][] pixels = new double[width * height][3];
             int index = 0;
 
-            //
-            for (int i = 0; i < width; i++) {
-                for (int j = 0; j < height; j++) {
-                    Color pixelColor = new Color(rgbImage.getRGB(i, j));
-                    pixels[index][0] = pixelColor.getRed();
-                    pixels[index][1] = pixelColor.getGreen();
-                    pixels[index][2] = pixelColor.getBlue();
+            for (int i = 0; i < width; i += vectorWidth) {
+                for (int j = 0; j < height; j += vectorLength) {
+                    double[] pixelSum = {0, 0, 0};
+                    int count = 0;
+
+                    for (int x = i; x < i + vectorWidth && x < width; x++) {
+                        for (int y = j; y < j + vectorLength && y < height; y++) {
+                            Color pixelColor = new Color(rgbImage.getRGB(x, y));
+                            pixelSum[0] += pixelColor.getRed();
+                            pixelSum[1] += pixelColor.getGreen();
+                            pixelSum[2] += pixelColor.getBlue();
+                            count++;
+                        }
+                    }
+
+                    pixels[index][0] = pixelSum[0] / count;
+                    pixels[index][1] = pixelSum[1] / count;
+                    pixels[index][2] = pixelSum[2] / count;
                     index++;
                 }
             }
@@ -48,13 +61,19 @@ public class VectorQuantization {
             BufferedImage compressedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             index = 0;
 
-            for (int i = 0; i < width; i++) {
-                for (int j = 0; j < height; j++) {
+            for (int i = 0; i < width; i += vectorWidth) {
+                for (int j = 0; j < height; j += vectorLength) {
                     int compressedValue = (int) compressedData.getEntry(index++, 0);
                     Color clusterColor = new Color((int) lbgAlgorithm.codevectors.getEntry(compressedValue, 0),
                             (int) lbgAlgorithm.codevectors.getEntry(compressedValue, 1),
                             (int) lbgAlgorithm.codevectors.getEntry(compressedValue, 2));
-                    compressedImage.setRGB(i, j, clusterColor.getRGB());
+
+                    // Set the cluster color in the specified region
+                    for (int x = i; x < i + vectorWidth && x < width; x++) {
+                        for (int y = j; y < j + vectorLength && y < height; y++) {
+                            compressedImage.setRGB(x, y, clusterColor.getRGB());
+                        }
+                    }
                 }
             }
 

@@ -110,19 +110,10 @@ public class ImageCompressionGUI extends JFrame {
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                VectorQuantization vectorQuantization = new VectorQuantization(inputName, "output.jpg", 16);
-                 try {
-                vectorQuantization.compress(inputName, "output.jpg", 256);
+                VectorQuantization vectorQuantization = new VectorQuantization(inputName, "output.jpg", 16, 8, 8);
+                vectorQuantization.compress(inputName, "output.jpg", 16, 8, 8);
                 JOptionPane.showMessageDialog(null, "Image compressed successfully!", "Success",
                         JOptionPane.INFORMATION_MESSAGE);
-                 } catch (FileNotFoundException ex) {
-                 JOptionPane.showMessageDialog(null, "Image not found: " + inputName, "Error",
-                 JOptionPane.ERROR_MESSAGE);
-                 } catch (IOException ex) {
-                 JOptionPane.showMessageDialog(null, "An error occurred during compression.",
-                 "Error",
-                 JOptionPane.ERROR_MESSAGE);
-                 }
             }
         });
 
